@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Tictactoe</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style>
+        .cell {
+            border: 1px solid #000;
+            height: 100px;
+            flex: 1 1 200px;
+        }
+
+        .ttt-container {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            width: 600px;
+            justify-content: space-evenly;
+            margin-top: 100px;
+        }
+
+        .player {
+            font-size: 50px;
+            text-align: center;
+        }
+
+        /* .cell {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        } */
+
+        .logs {
+            width: fit-content;
+            margin-top: 20px;
+            font-size: 20px;
+            height: 35px;
+            display: block;
+        }
+
+        .winner {
+            background-color: #18BC9C;
+            color: #fff;
+        }
+
+        .row {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="main">
+
+        <div class="row" style="margin-top: 90px;">
+            <div class="ttt-container center-block">
+                <div class="row">
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                </div>
+                <div class="row">
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                </div>
+                <div class="row">
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                    <div class="cell btn"></div>
+                </div>
+                <div class="logs center-block">
+
+                </div>
+    
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        let wins = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 4, 8],
+            [6, 4, 2],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8]
+        ];
+
+        let classLists = { "player": "btn cell", "winner": 'cell btn btn-success winner' }
+
+        function randomIntFromInterval(min, max) {//My Googling skills are good.
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        let players = ["O", "X"];
+
+        var player = randomIntFromInterval(0, 1);
+        console.log(player);
+
+        window.myPlayer = players[player];
+        window.initialPlayer = window.myPlayer;
+        window.canPlay = true;
+        window.winner = "";
+
+        function play(element) {
+            if (!window.canPlay)
+                return;
+            if (element.innerText.length > 0) {
+                log("Spot already played :/", true);
+                return;
+            }
+            let Player = window.myPlayer;
+            let nextPlayer = ((Player === "O") ? "X" : "O");
+            window.myPlayer = nextPlayer;
+            element.attributes['player'] = nextPlayer;
+            element.innerHTML = niceText(nextPlayer);
+        }
+
+        function niceText(text) {
+            let nt = `
+            <span class="player">${text}</span>
+            `;
+            return nt;
+        }
+
+        function resetGame() {
+            window.canPlay = true;
+            var buttons = document.getElementsByClassName("cell");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].innerText = "";
+                buttons[i].classList = classLists['player'];
+            }
+            log('');
+        }
+
+        function Button(txt) {
+            let Button = `
+            <button onclick='resetGame()' class='btn btn-primary'>
+                ${txt}
+            </button>
+            `;
+            return Button;
+        }
+
+        function checkDraw() {
+            var buttons = document.getElementsByClassName("cell");
+            let spots = 0;
+            for (let i = 0; i < buttons.length; i++) {
+                if (buttons[i].innerText.length > 0) {
+                    spots++;
+                }
+            }
+
+
+            if (spots === buttons.length) {
+                log('It is a draw 😀' + Button('Play Again!'));
+                window.canPlay = false;
+            }
+        }
+
+        function checkWin() {
+            var buttons = document.getElementsByClassName("cell");
+            for (let i = 0; i < buttons.length; i++) {
+
+                wins.forEach(function (v, k) {
+                    // console.log(v);
+                    // window.canPlay=false;
+                    let match = false;
+
+                    if (i === v[0] || i === v[1] || i === v[2]) {
+                        if (buttons[v[0]].innerText.length > 0 && buttons[v[1]].innerText.length > 0 && buttons[v[2]].innerText.length > 0) {
+                            if ((buttons[v[0]].innerText === buttons[v[2]].innerText) &&
+                                (buttons[v[1]].innerText === buttons[v[2]].innerText)) {
+                                match = true;
+                                [buttons[v[0]], buttons[v[1]], buttons[v[2]]].forEach((v) => {
+                                    var intrack = 0;
+                                    let interval = setInterval(() => {
+                                        if (intrack % 2 === 0) {
+                                            v.classList = classLists['winner'];
+                                        } else {
+                                            v.classList = classLists["player"];
+                                        }
+                                        if (intrack === 4)
+                                            clearInterval(interval)
+                                        intrack++;
+                                    }, 200);
+                                })
+                            }
+                        }
+                    }
+                    if (match) {
+                        log(`Game over! Winner is ${window.myPlayer} 😀 ${Button('Restart Game!')} <br>`);
+                        window.canPlay = false;
+                        window.winner = window.myPlayer;
+                    }
+                });
+                if (!window.canPlay) {
+                    break;
+                }
+            }
+        }
+
+        function init() {
+            var buttons = document.getElementsByClassName("cell");
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].addEventListener("click", function (event) {
+                    play(event.target);
+                    checkDraw();
+                    checkWin();
+                });
+            }
+        }
+
+        function log(text, clear) {
+            document.querySelector(".logs").innerHTML = text;
+            if (clear) {
+                setTimeout(() => document.querySelector(".logs").innerHTML = "", 700);
+            }
+            return;
+        }
+
+        window.onload = function () {
+            init();
+        }
+
+    </script>
+</body>
+
+</html>
